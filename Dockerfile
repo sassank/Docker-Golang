@@ -1,29 +1,18 @@
-# Base image for Golang development environment
-FROM golang:latest AS builder
-
-# Set working directory for the build stage
+# Specifies a parent image
+FROM golang:1.22.1
+ 
+# Creates an app directory to hold your app’s source code
 WORKDIR /app
-
-# Copy your application code into the container
-COPY . .
-
-# Install dependencies during build stage (if using Go modules)
-RUN go mod download
-
-# Build the Golang application
-RUN go build -o main .
-
-# Base image for running the application
-FROM postgres:latest
-
-# Set working directory for the runtime stage
-WORKDIR /app
-
-# Copy the built Go binary from the builder stage
-COPY --from=builder /app/main main
-
-# Expose the PostgreSQL port (default: 5432)
-EXPOSE 5432
-
-# Command to run the application (replace with your actual command)
-CMD ["main"]
+ 
+# Copies everything from your root directory into /app
+COPY go.mod .
+COPY main.go .
+ 
+# Builds your app with optional configuration
+RUN go build -o bin .
+ 
+# Tells Docker which network port your container listens on
+EXPOSE 8080
+ 
+# Specifies the executable command that runs when the container starts
+ENTRYPOINT [ "/app/bin" ]
